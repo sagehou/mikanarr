@@ -22,12 +22,19 @@
 
 ```env
 SONARR_API_KEY=aaaabbbbccccddddeeeeffff1145141919810
-SONARR_HOST=https://sonarr.yourdomain.com/
+SONARR_HOST=https://sonarr.yourdomain.com
 ADMIN_USERNAME=mikanarr
 ADMIN_PASSWORD=your_admin_password
 ```
 
 `ADMIN_USERNAME` 和 `ADMIN_PASSWORD` 用于登陆系统，未登陆无法访问。
+
+然后在data目录创建jwk key
+
+```bash
+ssh-keygen -t rsa -b 4096 -E SHA512 -m PEM -f jwt.key
+openssl rsa -in jwt.key -pubout -outform PEM -out jwt.key.pub
+```
 
 然后运行（需要 Node.js 环境）：
 
@@ -48,7 +55,6 @@ $ yarn start
 - `Pattern`: 标题模板，只有匹配至少一条的项目会被返回，模板本身为 [正则表达式](https://en.wikipedia.org/wiki/Regular_expression) ，表达式中需要包含 [命名捕获组](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Groups_and_Ranges) （即 `(?<episode>\d+)` )，用于提供剧集信息。
 - `Series`: 系列名称，网页端会从 Sonarr 获取所有系列名称，如果没有找到需要的系列，可能需要首先在 Sonarr 中添加系列。
 - `Season`: 季度代码，网页端会从 Sonarr 获取所有季度，并显示其监视状态。
-- `Offset`: 剧集号偏移量，用于修复从第一季开始的序号和从本季开始的序号。如`-26`。
 - `Language`: 语言，为剧集对应语言的英文名，如 `Chinese`，需要符合系列所需的语言设定，否则无法被 Sonarr 抓取。
 - `Quality`: 质量，可用的值可以参考 [Sonarr 源码](https://github.com/Sonarr/Sonarr/blob/develop/src/NzbDrone.Core/Parser/QualityParser.cs) ，Sonarr 似乎不支持对 RSS 推送的项目自动检测质量，网页端默认填写的值为 `WEBDL 1080p`。
 
@@ -102,25 +108,27 @@ https://<Mikanarr域名>/RSS/MyBangumi?token=<你的个人Token>
 
 ### 部署
 
-你可以使用 [Docker](https://www.docker.com/) 进行部署，我们的 Docker Image 在 [`std4453/mikanarr`](https://hub.docker.com/r/std4453/mikanarr) 。
+你可以使用 [Docker](https://www.docker.com/) 进行部署，我们的 Docker Image 在 [`izumiko/mikanarr`](https://hub.docker.com/r/izumiko/mikanarr) 。
 
-你也可以使用 [`build_docker.sh`](build_docker.sh) 自行构建 Docker Image。
+构建得到的镜像不包含 `.env` 文件，你需要把它放入下面的 `data/` 文件夹。
 
-构建得到的镜像不包含 `.env` 文件，你需要在 `docker run` 的时候指定对应的环境变量。
-
-此外，数据文件不应包含在 Docker Image 和 Docker Container 中，你应当从宿主机将数据文件夹 `data/` 挂载到容器中的 `/usr/app/data` 。
+此外，数据文件不应包含在 Docker Image 和 Docker Container 中，你应当从宿主机将数据文件夹 `data/` 挂载到容器中的 `/data` 。
 
 如果你使用 `docker-compose` ，这里有一份 `docker-compose.yml` 模板：
 
 ```yaml
-version: "3.9"
+version: "3"
 
 services:
   mikanarr:
-    image: std4453/mikanarr
+    image: izumiko/mikanarr
     volumes:
-      - ./data:/usr/src/app/data
-    env_file: .env
+      - /path/on/host/data:/data
+    environment:
+      - PUID=1000
+      - PGID=100
+    expose:
+      - 12306/tcp
     restart: unless-stopped
 ```
 
