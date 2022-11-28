@@ -1,4 +1,5 @@
-import { Button, Grid, InputAdornment, makeStyles } from "@material-ui/core";
+import { Button, Grid, InputAdornment } from "@mui/material";
+import { makeStyles } from '@mui/styles';
 import axios from "axios";
 import clsx from "clsx";
 import * as _ from "lodash";
@@ -250,11 +251,10 @@ const PatternEdit = (props) => {
           <PatternInput />
           <AutocompleteInput fullWidth source="series" choices={choices} />
           <SeasonsInput series={series} />
-	  <TextInput source="season" />
-	  <TextInput source="offset" />
+	        <TextInput source="offset" />
           <TextInput source="language" />
           <TextInput source="quality" />
-	  <TextInput source="releasegroup" />
+	        <TextInput source="releasegroup" />
         </SimpleForm>
       </Edit>
     </BusProvider>
@@ -285,12 +285,11 @@ const PatternCreate = (props) => {
           <RemoteInput />
           <PatternInput />
           <AutocompleteInput fullWidth source="series" choices={choices} />
-	  <SeasonsInput series={series} />
-          <TextInput source="season" />
+	        <SeasonsInput series={series} />
           <TextInput source="offset" />
           <TextInput source="language" />
           <TextInput source="quality" />
-	  <TextInput source="releasegroup" />
+	        <TextInput source="releasegroup" />
         </SimpleForm>
       </Create>
     </BusProvider>
